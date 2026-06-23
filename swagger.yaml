@@ -1,0 +1,224 @@
+openapi: 3.0.0
+info:
+  title: Blog Backend API
+  description: API for blog management with authentication
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Admin login
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required: [username, password]
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+
+  /api/newsletter/subscribe:
+    post:
+      summary: Subscribe to newsletter
+      tags: [Newsletter]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required: [email]
+      responses:
+        '201':
+          description: Subscription successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+
+  /api/blogs:
+    get:
+      summary: Get all blogs
+      tags: [Blogs]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of blogs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    type: object
+
+    post:
+      summary: Create new blog
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                slug:
+                  type: string
+                category_id:
+                  type: integer
+                status:
+                  type: string
+                  enum: [draft, published]
+                published_date:
+                  type: string
+                  format: date-time
+              required: [title, content, slug]
+      responses:
+        '201':
+          description: Blog created successfully
+
+  /api/blogs/{id}:
+    put:
+      summary: Update blog
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                slug:
+                  type: string
+                category_id:
+                  type: integer
+                status:
+                  type: string
+                  enum: [draft, published]
+                published_date:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Blog updated successfully
+
+  /api/categories:
+    get:
+      summary: Get all categories
+      tags: [Categories]
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+    post:
+      summary: Create new category
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              required: [name]
+      responses:
+        '201':
+          description: Category created successfully
