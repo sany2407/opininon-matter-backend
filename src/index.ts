@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import { env } from './config/env';
@@ -9,11 +10,13 @@ import newsletterRoutes from './routes/newsletter';
 import blogRoutes from './routes/blogs';
 import categoryRoutes from './routes/categories';
 import authRoutes from './routes/auth';
+import uploadRoutes from './routes/upload';
 
 const app = express();
 const PORT = env.PORT;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Swagger Documentation
@@ -25,6 +28,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -7,6 +7,7 @@ export const createBlogSchema = z.object({
   category_id: z.number().optional().nullable(),
   status: z.enum(['draft', 'published']).default('draft'),
   published_date: z.string().optional().nullable(),
+  cover_image: z.string().url().optional().nullable(),
 });
 
 export const updateBlogSchema = z.object({
@@ -16,4 +17,5 @@ export const updateBlogSchema = z.object({
   category_id: z.number().optional().nullable(),
   status: z.enum(['draft', 'published']).optional(),
   published_date: z.string().optional().nullable(),
+  cover_image: z.string().url().optional().nullable(),
 });

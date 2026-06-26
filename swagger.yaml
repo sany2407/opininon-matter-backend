@@ -118,14 +118,14 @@ paths:
                     type: object
 
     post:
-      summary: Create new blog
+      summary: Create new blog (with optional cover image)
       tags: [Blogs]
       security:
         - bearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -143,14 +143,47 @@ paths:
                 published_date:
                   type: string
                   format: date-time
+                cover_image:
+                  type: string
+                  format: binary
+                  description: Cover image file (JPEG, PNG, WebP, or GIF, max 6MB)
               required: [title, content, slug]
       responses:
         '201':
           description: Blog created successfully
 
   /api/blogs/{id}:
+    get:
+      summary: Get a single blog by ID
+      tags: [Blogs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Blog details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
     put:
-      summary: Update blog
+      summary: Update blog (with optional cover image)
       tags: [Blogs]
       security:
         - bearerAuth: []
@@ -163,7 +196,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -181,9 +214,100 @@ paths:
                 published_date:
                   type: string
                   format: date-time
+                cover_image:
+                  type: string
+                  format: binary
+                  description: New cover image file (JPEG, PNG, WebP, or GIF, max 6MB)
       responses:
         '200':
           description: Blog updated successfully
+
+  /api/upload/{id}/cover-image:
+    post:
+      summary: Upload a cover image for a blog
+      tags: [Upload]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Blog ID to attach the cover image to
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file (JPEG, PNG, WebP, or GIF, max 6MB)
+              required: [image]
+      responses:
+        '200':
+          description: Image uploaded and blog updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          description: No file uploaded or invalid file type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /api/categories/{id}:
+    get:
+      summary: Get a single category by ID
+      tags: [Categories]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /api/categories:
     get:

@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express';
-import { supabase } from '../config/database';
+import { supabase, supabaseAdmin } from '../config/database';
+
+const BUCKET_NAME = 'blog-images';
 
 export const getAllBlogs = async (req: Request, res: Response) => {
   try {
@@ -42,9 +44,56 @@ export const getAllBlogs = async (req: Request, res: Response) => {
   }
 };
 
+export const getBlogById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*, categories(name)')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        res.status(404).json({ error: 'Blog not found' });
+        return;
+      }
+      throw error;
+    }
+
+    res.json({ data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const createBlog = async (req: Request, res: Response) => {
   try {
-    const { title, content, slug, category_id, status, published_date } = req.body;
+    const { title, content, slug, category_id, status, published_date, cover_image } = req.body;
+
+    let imageUrl = cover_image || null;
+
+    // If a file was uploaded, upload it to Supabase Storage
+    if (req.file) {
+      const fileExt = req.file.originalname.split('.').pop();
+      const fileName = `covers/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+        .from(BUCKET_NAME)
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabaseAdmin.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(uploadData.path);
+
+      imageUrl = urlData.publicUrl;
+    }
 
     const { data, error } = await supabase
       .from('blogs')
@@ -52,9 +101,10 @@ export const createBlog = async (req: Request, res: Response) => {
         title,
         content,
         slug,
-        category_id,
+        category_id: category_id ? Number(category_id) : null,
         status,
         published_date: published_date || null,
+        cover_image: imageUrl,
       })
       .select()
       .single();
@@ -70,7 +120,33 @@ export const createBlog = async (req: Request, res: Response) => {
 export const updateBlog = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const updates = { ...req.body };
+
+    // Convert category_id to number if present
+    if (updates.category_id) {
+      updates.category_id = Number(updates.category_id);
+    }
+
+    // If a file was uploaded, upload it to Supabase Storage
+    if (req.file) {
+      const fileExt = req.file.originalname.split('.').pop();
+      const fileName = `covers/${id}-${Date.now()}.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+        .from(BUCKET_NAME)
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabaseAdmin.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(uploadData.path);
+
+      updates.cover_image = urlData.publicUrl;
+    }
 
     const { data, error } = await supabase
       .from('blogs')

@@ -12,6 +12,7 @@ CREATE TABLE blogs (
   title VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
   slug VARCHAR(255) UNIQUE NOT NULL,
+  cover_image TEXT,
   published_date TIMESTAMP,
   category_id INTEGER REFERENCES categories(id),
   status VARCHAR(50) DEFAULT 'draft', -- draft, published

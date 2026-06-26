@@ -22,6 +22,30 @@ export const getAllCategories = async (req: Request, res: Response) => {
   }
 };
 
+export const getCategoryById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        res.status(404).json({ error: 'Category not found' });
+        return;
+      }
+      throw error;
+    }
+
+    res.json({ data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const createCategory = async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
