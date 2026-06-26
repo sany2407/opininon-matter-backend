@@ -17,7 +17,7 @@ const PORT = env.PORT;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://opininon-matter.blog.abielan.in'],
+  origin: ['http://localhost:3000', 'https://opinion-matters.blog.abielan.in'],
 }));
 app.use(express.json());
 
