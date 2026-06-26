@@ -17,7 +17,7 @@ const PORT = env.PORT;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://opininon-matter.vercel.app'],
+  origin: ['http://localhost:3000', 'https://opininon-matter.api.abielan.in'],
 }));
 app.use(express.json());
 
