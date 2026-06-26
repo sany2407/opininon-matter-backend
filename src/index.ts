@@ -16,7 +16,9 @@ const app = express();
 const PORT = env.PORT;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://opininon-matter.vercel.app'],
+}));
 app.use(express.json());
 
 // Swagger Documentation
